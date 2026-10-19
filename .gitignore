@@ -1,0 +1,4 @@
+# Compiled Java output (Eclipse/VS Code build folders)
+*.class
+classes/
+bin/

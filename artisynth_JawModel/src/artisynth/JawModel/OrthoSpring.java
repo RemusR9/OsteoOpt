@@ -108,12 +108,12 @@ public class OrthoSpring extends FrameSpring
 
       computeForces();
       
-      myFTmp.transform (myX1A, myF);
+      myFTmp.transform (myTCA, myF);  // XXX renamed: myX1A -> myTCA (FrameSpring API change, artisynth_core 381688a7)
       myFTmp.transform (myFrameA.getPose().R); // put into rotated world coords
       myFrameA.addForce (myFTmp);
       myFrameAForce.set (myFTmp);
-      myF.inverseTransform (myX21.R);
-      myFTmp.transform (myX2B, myF);
+      myF.inverseTransform (myTD.R);  // XXX renamed: myX21 -> myTD (net displacement; FrameSpring API change, artisynth_core 381688a7)
+      myFTmp.transform (myTDB, myF);  // XXX renamed: myX2B -> myTDB (FrameSpring API change, artisynth_core 381688a7)
       myFTmp.transform (myFrameB.getPose().R); // put into rotated world coords
       myFTmp.negate();
       myFrameB.addForce (myFTmp);
@@ -192,8 +192,8 @@ public class OrthoSpring extends FrameSpring
 
    public void prerender (RenderList list)
     {
-      myRenderXCW.mul (myFrameA.getPose (), myX1A);
-      myRenderXDW.mul (myFrameB.getPose (), myX2B);
+      myRenderXCW.mul (myFrameA.getPose (), myTCA);  // XXX renamed: myX1A -> myTCA (FrameSpring API change, artisynth_core 381688a7)
+      myRenderXDW.mul (myFrameB.getPose (), myTDB);  // XXX renamed: myX2B -> myTDB (FrameSpring API change, artisynth_core 381688a7)
     }
 
    public void updateBounds (Vector3d pmin, Vector3d pmax)

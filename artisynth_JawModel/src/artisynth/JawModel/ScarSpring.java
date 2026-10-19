@@ -77,9 +77,8 @@ public class ScarSpring extends OrthoSpring implements TransformableGeometry
 //      if (myX1A != null)
 //         myX1A.setIdentity ();
 //      else
-         myX1A = new RigidTransform3d();
-      
-      myX2B = new RigidTransform3d();
+      myTCA = new RigidTransform3d();  // XXX renamed: myX1A -> myTCA (FrameSpring API change, artisynth_core 381688a7)    
+      myTDB = new RigidTransform3d();  // XXX renamed: myX2B -> myTDB (FrameSpring API change, artisynth_core 381688a7)
       for (int i=0; i<planeRenderPnts.length; i++)
        { planeRenderPnts[i] = new Point3d();
        }
@@ -118,8 +117,8 @@ public class ScarSpring extends OrthoSpring implements TransformableGeometry
             setFrameA(collidingPointA.getFrame ());
          }
          // update CA incase frame marker location has changed
-         myX1A.set (myFrameA.getPose ());
-         myX1A.p.set (collidingPointA.getLocation ());
+         myTCA.set (myFrameA.getPose ());  // XXX renamed: myX1A -> myTCA (FrameSpring API change, artisynth_core 381688a7)
+         myTCA.p.set (collidingPointA.getLocation ());  // XXX renamed: myX1A -> myTCA (FrameSpring API change, artisynth_core 381688a7)
       }
       super.applyForces (t);
    }
@@ -131,7 +130,7 @@ public class ScarSpring extends OrthoSpring implements TransformableGeometry
        * only transform attach frame B because attach frame A 
        * is defined by the frame marker on frame A
        */
-      gtr.transform (myX2B);
+      gtr.transform (myTDB);  // XXX renamed: myX2B -> myTDB (FrameSpring API change, artisynth_core 381688a7)
    }   
    
    public void addTransformableDependencies (
