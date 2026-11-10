@@ -1,7 +1,10 @@
 # OsteoOpt++: Patient-Specific Optimization for Mandibular Reconstruction Planning with Enhanced Bone Union
 
 [![License](https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-active%20development-brightgreen.svg)](#)
+[![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![MATLAB](https://img.shields.io/badge/MATLAB-0076A8.svg)](https://www.mathworks.com/products/matlab.html)
+[![Status](https://img.shields.io/badge/status-archived-brightgreen.svg)](#)
 
 OsteoOpt++ is the extended version of OsteoOpt, an image-to-decision
 framework for mandibular reconstruction. It combines virtual surgical planning,
@@ -19,9 +22,6 @@ Earlier conference version: [MICCAI 2025](https://www.researchgate.net/publicati
 * **August 27, 2025** - Nominated for the MICCAI 2025 Best Paper and Young Scientist Awards.
 * **May 12, 2025** - Early accepted to MICCAI 2025 (top 9% of approximately 3,700 submissions).
 
-## TODO
-
-- [ ] Fix screw-placement descriptions and code input for the different defect types after the latest update.
 
 **Demo: one optimization iteration for the Body (B) defect case.**
 
@@ -51,7 +51,7 @@ artisynth_JawModel/src/artisynth/JawModel/matlab/MainOneSegment.m
 artisynth_JawModel/src/artisynth/JawModel/matlab/MainTwoSegment.m
 ```
 
-## Patient-Specific Modeling
+## Patient-Specific Registration and Modeling
 
 ![Patient-specific modeling pipeline](assets/patient_specific_modeling.jpg)
 
@@ -73,7 +73,7 @@ See the [registration README](artisynth_JawModel/src/artisynth/JawModel/patient_
 
 Tested on Windows.
 
-1. Install **JDK 8 or higher** and **Eclipse IDE**.
+1. Install **MATLAB**, **JDK 8 or higher**, and **Eclipse IDE**.
 
 2. Clone **ArtiSynth Core**:
 
@@ -84,15 +84,17 @@ Tested on Windows.
 3. In Eclipse/ArtiSynth, add the model packages and make `artisynth_VSP` and
    `artisynth_JawModel` visible on the external classpath.
 
-4. Set `ARTISYNTH_HOME` to the local `artisynth_core` checkout. In MATLAB:
+4. Set `ARTISYNTH_HOME` to the local `artisynth_core` checkout and configure
+   the MATLAB interface. Replace the example path with your installation:
 
    ```matlab
+   setenv('ARTISYNTH_HOME', 'C:\path\to\artisynth_core');
    addpath(fullfile(getenv('ARTISYNTH_HOME'), 'matlab'));
    setArtisynthClasspath(getenv('ARTISYNTH_HOME'));
    ```
 
 5. Create an Anaconda Python environment and install the Python libraries called
-   from MATLAB:
+   from MATLAB. Run the following from the repository root:
 
    ```bash
    conda create -n osteoopt python=3.8
@@ -100,41 +102,146 @@ Tested on Windows.
    pip install -r requirements.txt
    ```
 
+   Then configure MATLAB to use that environment:
+
    ```matlab
-   pyenv('Version', 'C:\path\to\anaconda3\envs\osteoopt\python.exe')
+   pyenv('Version', 'C:\path\to\anaconda3\envs\osteoopt\python.exe');
    ```
 
 6. Patient-specific registration also requires 3D Slicer with the
-   TotalSegmentator extension and its dependencies initialized. Set
-   `SLICER_EXECUTABLE` to the full path of `Slicer.exe`; see the
+   TotalSegmentator extension and its dependencies initialized. These
+   Slicer-specific dependencies are managed separately from the Python
+   environment used by MATLAB. Set the executable path in MATLAB:
+
+   ```matlab
+   setenv('SLICER_EXECUTABLE', 'C:\path\to\Slicer.exe');
+   ```
+
+   See the
    [registration README](artisynth_JawModel/src/artisynth/JawModel/patient_specific/matlab/README.md)
-   for details. This setup is recommended because the extension installs its
-   dependencies; a fully independent PyTorch implementation is also possible.
+   for installation, input preparation, and configuration details.
 
 ## Running
 
-For generic optimization, open MATLAB in:
+Choose the reconstruction and check the corresponding settings in
+[Editing model settings](#editing-model-settings) before running either
+workflow.
+
+### Generic optimization
+
+Set the MATLAB current folder to:
 
 ```text
 artisynth_JawModel/src/artisynth/JawModel/matlab
 ```
 
-Run `MainOneSegment.m` for one-segment defects or `MainTwoSegment.m` for
-two-segment defects.
+Run `MainOneSegment.m` for a one-segment reconstruction or `MainTwoSegment.m`
+for a two-segment reconstruction. The supplied one-segment examples use B or S
+defects; the two-segment example is configured for RB.
 
-For patient-specific registration/model construction, open MATLAB in:
+### Patient-specific registration and Modeling
+
+Prepare the inputs described in the
+[registration README](artisynth_JawModel/src/artisynth/JawModel/patient_specific/matlab/README.md),
+then set the MATLAB current folder to:
 
 ```text
 artisynth_JawModel/src/artisynth/JawModel/patient_specific/matlab
 ```
 
-Follow the input instructions in the [registration README](artisynth_JawModel/src/artisynth/JawModel/patient_specific/matlab/README.md), then run:
+Run:
 
 ```matlab
 Registration_Artisynth_Main
 ```
 
-For optimization-only or registration-plus-optimization geometry files, check [`bodyList.txt`](https://github.com/hamidreza-aftabi/OsteoOpt/blob/main/artisynth_JawModel/src/artisynth/JawModel/geometry/bodyList.txt).
+The registration README describes the required CT and landmark files,
+patient-specific adaptation parameters, and generated outputs. It also
+explains how to select the one-segment or two-segment ArtiSynth model in
+`Registration_Artisynth_Main.m`.
+
+## Editing model settings
+
+Keep the MATLAB, screw, geometry, and material settings consistent with the
+selected reconstruction.
+
+### Segment count and MATLAB defect settings
+
+Set `defectType` and `trial` consistently across the files for your workflow:
+
+| Workflow | Files containing `defectType` |
+| --- | --- |
+| One segment: B or S | [`MainOneSegment.m`](artisynth_JawModel/src/artisynth/JawModel/matlab/MainOneSegment.m), [`helperFunctionV4WithSobolSeq.m`](artisynth_JawModel/src/artisynth/JawModel/matlab/helperFunctionV4WithSobolSeq.m), [`runArtisynthSim.m`](artisynth_JawModel/src/artisynth/JawModel/matlab/runArtisynthSim.m) |
+| Two segments: RB | [`MainTwoSegment.m`](artisynth_JawModel/src/artisynth/JawModel/matlab/MainTwoSegment.m), [`helperFunctionTwo.m`](artisynth_JawModel/src/artisynth/JawModel/matlab/helperFunctionTwo.m), [`runArtisynthSimTwo.m`](artisynth_JawModel/src/artisynth/JawModel/matlab/runArtisynthSimTwo.m) |
+
+Each file defines its own `defectType`; changing the main script does not
+update the others. The main script labels results, while the helper and
+simulation functions configure optimization and reconstruction.
+
+`runArtisynthSim.m` sets `num_segment` and `num_screws` to `1`;
+`runArtisynthSimTwo.m` sets both to `2`. These scripted screw counts override
+`DEFAULT_NUM_SCREWS` in Java.
+
+### Screw settings and B/S/RB placement
+
+In
+[`PlateBuilder.java`](https://github.com/hamidreza-aftabi/OsteoOpt/blob/main/artisynth_VSP/src/artisynth/VSP/reconstruction/PlateBuilder.java),
+set the defect selector at the top of the class:
+
+```java
+private static final ScrewDefectType SCREW_DEFECT_TYPE = ScrewDefectType.B;
+```
+
+Choose `ScrewDefectType.B`, `ScrewDefectType.S`, or `ScrewDefectType.RB` to
+match MATLAB. Direction vectors and first-screw offsets are grouped below the
+selector; the second-screw position is defined separately in `buildScrews()`.
+
+`DEFAULT_NUM_SCREWS` sets the default for manual VSP use; MATLAB workflows use
+`num_screws` in the simulation functions above.
+
+### Body and geometry files
+
+Select the rigid-body meshes in
+[`bodyList.txt`](https://github.com/hamidreza-aftabi/OsteoOpt/blob/main/artisynth_JawModel/src/artisynth/JawModel/geometry/bodyList.txt):
+
+- **Optimization only:** enable the generic template-model geometry block.
+- **After registration:** enable the registration-output block and disable
+  the optimization-only block.
+
+For one segment, keep `donor_mesh0` and `screw0` active and comment out
+`donor_mesh1` and `screw1`. For two segments, keep all four entries active.
+The simulation functions also toggle the second-segment entries. Check that
+the mesh filenames match your outputs, and review the donor FEM and plate
+file paths in the Java model below.
+
+### Material properties
+
+Edit the Java model for the selected reconstruction:
+
+| Reconstruction | Model file |
+| --- | --- |
+| One segment | [`JawFemDemoOptimize.java`](https://github.com/hamidreza-aftabi/OsteoOpt/blob/main/artisynth_JawModel/src/artisynth/JawModel/JawFemDemoOptimize.java) |
+| Two segments | [`JawFemDemoOptimizeTwoWithSafety.java`](https://github.com/hamidreza-aftabi/OsteoOpt/blob/main/artisynth_JawModel/src/artisynth/JawModel/JawFemDemoOptimizeTwoWithSafety.java) |
+
+Parameters near the beginning of these classes include:
+
+- **Cancellous bone:** `CancellousBoneDensity`, `CancellousBoneE`, and
+  `CancellousBoneNu`.
+- **Cortical bone:** `corticalBoneDensity`, `corticalBoneYoungModulus`, and
+  `corticalBonePoissonRatio`.
+- **Titanium:** `myTitaniumDensity` for plate/screw density, and `myTitaniumE`
+  and `myTitaniumNu` for plate elasticity.
+- **Donor contact:** `DEFAULT_E`, `DEFAULT_Nu`, `DEFAULT_Damping`, and
+  `DEFAULT_Thickness`.
+
+Keep the `DENSITY_TO_mmKS` and `PRESSURE_TO_mmKS` conversions. When changing
+bone-density assumptions, also review `corticalAppositionDensity` and
+`cancellousAppositionDensity`, which are used by the bone-union metric.
+
+Registration does not individualize material properties; see the
+[registration README](artisynth_JawModel/src/artisynth/JawModel/patient_specific/matlab/README.md).
+
+After Java edits, rebuild the project and reload the ArtiSynth model.
 
 ## Citation
 
@@ -151,8 +258,7 @@ If you use OsteoOpt++, please cite the journal version:
 }
 ```
 
-Please also cite the earlier OsteoOpt MICCAI conference paper
-([ResearchGate](https://www.researchgate.net/publication/395706192_OsteoOpt_A_Bayesian_Optimization_Framework_for_Enhancing_Bone_Union_Likelihood_in_Mandibular_Reconstruction_Surgery)):
+Please also cite the earlier OsteoOpt MICCAI conference paper:
 
 ```bibtex
 @inproceedings{aftabi2025osteoopt,
